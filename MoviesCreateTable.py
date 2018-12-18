@@ -1,4 +1,6 @@
 # %%
+# 各種設定
+
 from __future__ import print_function  # Python 2/3 compatibility
 import boto3
 import json
@@ -6,8 +8,9 @@ import decimal
 from boto3.dynamodb.conditions import Key, Attr
 import pandas as pd
 from pandas.io.json import json_normalize
-import numpy as np
-import matplotlib.pyplot as plt
+
+# import numpy as np
+# import matplotlib.pyplot as plt
 
 pd.set_option("display.max_columns", 100)
 pd.set_option("display.max_rows", 500)
@@ -237,17 +240,17 @@ df = json_normalize(response[u"Items"])
 print("Movies from 1992 - titles A-L, with genres and lead actor")
 
 response = table.query(
-    ProjectionExpression="#yr, title, info.genres, info.actors[0]",
+    ProjectionExpression="#yr, title, info.genres, info.actors[0]",  # 抽出する要素を選べる。
     ExpressionAttributeNames={
         "#yr": "year"
-    },  # Expression Attribute Names for Projection Expression only.
-    KeyConditionExpression=Key("year").eq(1992) & Key("title").between("A", "L"),
+    },  # Expression Attribute Names for Projection Expression only. # yearはこうして指定しないとエラーになる。
+    KeyConditionExpression=Key("year").eq(1992)
+    & Key("title").between("A", "L"),  # クエリ書ける。
 )
 
-# for i in response[u"Items"]:
-#     print(json.dumps(i, cls=DecimalEncoder))
+for i in response[u"Items"]:
+    print(json.dumps(i, cls=DecimalEncoder))
 
-print(response[u"Items"])
 
 # %%
 
