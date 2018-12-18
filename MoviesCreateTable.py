@@ -242,10 +242,10 @@ print("Movies from 1992 - titles A-L, with genres and lead actor")
 response = table.query(
     ProjectionExpression="#yr, title, info.genres, info.actors[0]",  # 抽出する要素を選べる。
     ExpressionAttributeNames={
-        "#yr": "year"
-    },  # Expression Attribute Names for Projection Expression only. # yearはこうして指定しないとエラーになる。
+        "#yr": "year"  # year は DynamoDB の予約語であるため、こうしないとエラーになる。
+    },  # Expression Attribute Names for Projection Expression only.
     KeyConditionExpression=Key("year").eq(1992)
-    & Key("title").between("A", "L"),  # クエリ書ける。
+    & Key("title").between("A", "L"),  # クエリ書ける。これで「A」～「L」で始まるって意味か。
 )
 
 for i in response[u"Items"]:
@@ -257,3 +257,36 @@ for i in response[u"Items"]:
 # pd.DataFrame(response[u"Items"])
 
 json_normalize(response[u"Items"])
+
+# %%
+# ステップ 4.3: スキャン
+
+fe = Key("year").between(1950, 1959)
+pe = "#yr, title, info.rating"
+# Expression Attribute Names for Projection Expression only.
+ean = {"#yr": "year"}
+esk = None
+
+
+# # 1ページ分だけ
+response = table.scan(
+    FilterExpression=fe, ProjectionExpression=pe, ExpressionAttributeNames=ean
+)
+
+for i in response["Items"]:
+    print(json.dumps(i, cls=DecimalEncoder))
+
+print("-----")
+
+
+# 全ページ分
+while "LastEvaluatedKey" in response:
+    response = table.scan(
+        ProjectionExpression=pe,
+        FilterExpression=fe,
+        ExpressionAttributeNames=ean,
+        ExclusiveStartKey=response["LastEvaluatedKey"],
+    )
+
+    for i in response["Items"]:
+        print(json.dumps(i, cls=DecimalEncoder))
