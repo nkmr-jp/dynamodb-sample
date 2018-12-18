@@ -84,15 +84,6 @@ with open("moviedata.json") as json_file:
 # %%
 # 3.1 新しい項目の作成
 # Helper class to convert a DynamoDB item to JSON.
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            if abs(o) % 1 > 0:
-                return float(o)
-            else:
-                return int(o)
-        return super(DecimalEncoder, self).default(o)
-
 
 dynamodb = boto3.resource(
     "dynamodb", region_name="us-west-2", endpoint_url="http://localhost:8000"
@@ -290,3 +281,13 @@ while "LastEvaluatedKey" in response:
 
     for i in response["Items"]:
         print(json.dumps(i, cls=DecimalEncoder))
+
+
+# %%
+# ステップ 5: (オプション) テーブルを削除する
+# https://docs.aws.amazon.com/ja_jp/amazondynamodb/latest/developerguide/GettingStarted.Python.05.html
+
+
+table = dynamodb.Table("Movies")
+
+table.delete()
