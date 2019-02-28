@@ -26,16 +26,17 @@ class DecimalEncoder(json.JSONEncoder):
         return super(DecimalEncoder, self).default(o)
 
 
+dynamodb = boto3.resource(
+    "dynamodb", region_name="ap-northeast-1", endpoint_url="http://localhost:8000"
+)
+
+
 # %%
 # ステップ 1: テーブルを作成する
 # MoviesCreateTable.py
 # https://docs.aws.amazon.com/ja_jp/amazondynamodb/latest/developerguide/GettingStarted.Python.01.html
 
 # %%
-dynamodb = boto3.resource(
-    "dynamodb", region_name="us-west-2", endpoint_url="http://localhost:8000"
-)
-
 table = dynamodb.create_table(
     TableName="Movies",
     KeySchema=[
@@ -53,14 +54,16 @@ print("Table status:", table.table_status)
 
 
 # %%
+# テーブル一覧
+table_list = dynamodb.tables.all()
+for table in table_list:
+    print(table.table_name)
+
+
+# %%
 # ステップ 2: サンプルデータをロードする
 # MoviesLoadData.py
 # https://docs.aws.amazon.com/ja_jp/amazondynamodb/latest/developerguide/GettingStarted.Python.02.html#GettingStarted.Python.02.01
-
-dynamodb = boto3.resource(
-    "dynamodb", region_name="us-west-2", endpoint_url="http://localhost:8000"
-)
-
 table = dynamodb.Table("Movies")
 
 with open("moviedata.json") as json_file:
@@ -84,11 +87,6 @@ with open("moviedata.json") as json_file:
 # %%
 # 3.1 新しい項目の作成
 # Helper class to convert a DynamoDB item to JSON.
-
-dynamodb = boto3.resource(
-    "dynamodb", region_name="us-west-2", endpoint_url="http://localhost:8000"
-)
-
 table = dynamodb.Table("Movies")
 
 title = "The Big New Movie"
